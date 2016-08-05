@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TheWorld.Models
 {
@@ -7,7 +8,7 @@ namespace TheWorld.Models
         IEnumerable<Trip> GetAllTrips();
         IEnumerable<Trip> GetAllTripsWithStops();
         void AddTrip(Trip newTrip);
-        bool SaveAll();
+        Task<bool> SaveChangesAsync();
         Trip GetTripByName(string tripName);
         void AddStop(string tripName, Stop newStop);
     }

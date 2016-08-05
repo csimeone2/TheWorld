@@ -10,8 +10,8 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
       "environmentVariables": {
+        "Keys__BingKey": "AlorsSE-Yyb6Dan8IiSkiwHneHKbBiSQfgDS-hFYqHKclfzaP8zX4gVaz-o6uaCk",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },

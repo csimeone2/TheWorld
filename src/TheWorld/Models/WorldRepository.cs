@@ -20,9 +20,14 @@ namespace TheWorld.Models
 
         public void AddStop(string tripName,Stop newStop)
         {
-            var theTrip = GetTripByName(tripName);
-            newStop.Order = theTrip.Stops.Max(s => s.Order) + 1;
-            _context.Stops.Add(newStop);
+            var trip = GetTripByName(tripName);
+
+            if (trip != null)
+            {
+                newStop.Order = trip.Stops.Max(s => s.Order) + 1;
+                trip.Stops.Add(newStop);
+                _context.Stops.Add(newStop);
+            }      
         }
 
         public void AddTrip(Trip newTrip)
@@ -64,14 +69,15 @@ namespace TheWorld.Models
 
         public Trip GetTripByName(string tripName)
         {
-            return _context.Trips.Include(t => t.Stops)
+            return _context.Trips
+                        .Include(t => t.Stops)
                         .Where(t => t.Name == tripName)
                         .FirstOrDefault();
         }
 
-        public bool SaveAll()
+        public async Task<bool> SaveChangesAsync()
         {
-            return _context.SaveChanges() > 0;
+            return (await _context.SaveChangesAsync()) > 0;
         }
     }
 }

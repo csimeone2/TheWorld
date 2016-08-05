@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TheWorld.Services;
 using TheWorld.Models;
+using Newtonsoft.Json.Serialization;
+using AutoMapper;
+using TheWorld.ViewModels;
 
 namespace TheWorld
 {
@@ -50,25 +48,29 @@ namespace TheWorld
 
             services.AddScoped<IWorldRepository, WorldRepository>();
 
+            services.AddTransient<GeoCoordsService>();
+
             services.AddTransient<WorldContextSeedData>();
 
             services.AddLogging();
 
-            services.AddMvc();
-            //.AddJsonOptions(opt =>
-            //{
-            //    opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            //});
-
-            //            services.AddEntityFramework()
-            //                .AddSqlServer()
-            //                .AddDbContext<WorldContext>();
+            services.AddMvc()
+            .AddJsonOptions(opt =>
+            {
+                opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, WorldContextSeedData seeder)
         {
+
+            Mapper.Initialize(config =>
+            {
+                config.CreateMap<Trip, TripViewModel>().ReverseMap();
+                config.CreateMap<Stop, StopViewModel>().ReverseMap();
+            });
 
             if (env.IsDevelopment())
             {
@@ -82,12 +84,6 @@ namespace TheWorld
             }
 
             app.UseStaticFiles();
-
-            //Mapper.Initialize(config =>
-            //{
-            //    config.CreateMap<Trip, TripViewModel>().ReverseMap();
-            //    config.CreateMap<Stop, StopViewModel>().ReverseMap();
-            //});
 
             app.UseMvc(config =>
             {

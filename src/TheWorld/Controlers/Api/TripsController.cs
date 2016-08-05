@@ -24,45 +24,40 @@ namespace TheWorld.Controllers.Api
         }
 
         [HttpGet("")]
-        public JsonResult Get()
+        public IActionResult Get()
         {
-            var results = Mapper.Map<IEnumerable<TripViewModel>>(_repository.GetAllTripsWithStops());
-            return Json(results);
-            //return Json(new { name = "Shawn" });
+            var results = _repository.GetAllTripsWithStops();
+
+            try
+            {
+                return Ok(Mapper.Map<IEnumerable<TripViewModel>>(results));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to get all trips: {0}",ex);
+                return BadRequest("Error occurred");
+            }
         }
 
         [HttpPost("")]
-        public JsonResult Post([FromBody] TripViewModel vm)
+        public async Task<IActionResult> Post([FromBody] TripViewModel theTrip)
         {
-            try
+
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                var newTrip = Mapper.Map<Trip>(theTrip);
+
+                // Save to the database
+                _logger.LogInformation("Attempting to save a new trip");
+                _repository.AddTrip(newTrip);
+
+                if (await _repository.SaveChangesAsync())
                 {
-                    var newTrip = Mapper.Map<Trip>(vm);
-
-                    // Save to the database
-                    _logger.LogInformation("Attempting to save a new trip");
-                    _repository.AddTrip(newTrip);
-
-                    if (_repository.SaveAll())
-                    {
-                        Response.StatusCode = (int)HttpStatusCode.Created;
-                        return Json(Mapper.Map<TripViewModel>(newTrip)); 
-                    }
+                    return Created($"api/trips/{theTrip}", Mapper.Map<TripViewModel>(newTrip));
                 }
             }
-            catch(Exception ex)
-            {
-                _logger.LogError("Failed to save new trip", ex);
-                Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                return Json(new { Message = ex.Message });
-            }
 
-
-            Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            return Json(new { message = "Failed", ModelState = ModelState });
-
+            return BadRequest("Failed to save the trip");
         }
-
     }
 }
